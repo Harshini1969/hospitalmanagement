@@ -15,12 +15,26 @@ const MedicalRecords = () => {
   const [records, setRecords] = useState([]);
   const navigate = useNavigate();
 
+  // Get logged-in user
+  const user = JSON.parse(localStorage.getItem("user"));
+
   useEffect(() => {
     axios
       .get("http://localhost:8000/medicalRecords")
-      .then((res) => setRecords(res.data))
+      .then((res) => {
+        // If user is patient, show only their records
+        if (user && user.role === "patient") {
+          const filtered = res.data.filter(
+            (r) => r.patientId === user.id || r.patientName === user.name
+          );
+          setRecords(filtered);
+        } else {
+          // For admin or doctor, show all
+          setRecords(res.data);
+        }
+      })
       .catch((err) => console.log(err));
-  }, []);
+  }, [user]);
 
   return (
     <Box sx={{ p: 4, bgcolor: "#f5f7fa", minHeight: "100vh" }}>
@@ -38,12 +52,10 @@ const MedicalRecords = () => {
         <Button
           variant="outlined"
           size="small"
-          type="button"
           onClick={() => navigate("/")}
         >
-          Back 
+          Back
         </Button>
-
       </Stack>
 
       {/* Records */}
@@ -60,10 +72,7 @@ const MedicalRecords = () => {
           {records.map((r) => (
             <Card
               key={r.id}
-              sx={{
-                borderRadius: 3,
-                boxShadow: 2,
-              }}
+              sx={{ borderRadius: 3, boxShadow: 2 }}
             >
               <CardContent>
                 <Stack spacing={1}>

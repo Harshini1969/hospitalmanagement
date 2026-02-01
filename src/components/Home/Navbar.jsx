@@ -1,38 +1,83 @@
-// src/components/Navbar.jsx
-import React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import IconButton from "@mui/material/IconButton";
+import React, { useState } from "react";
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  IconButton,
+  Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function Navbar() {
+const Navbar = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+    localStorage.clear(); // remove token, role, user
+    navigate("/");        // go to home page safely
   };
 
-  return (
-    <Box>
-      <CssBaseline />
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
+  const commonLinks = [
+    { name: "Home", path: "/" },
+    { name: "Services", path: "/services" },
+    { name: "Contact", path: "/contact" },
+    { name: "Help", path: "/help" },
+  ];
+
+  const userLinks = user ? [
+    user.role === "admin" && { name: "Admin", path: "/adminDashboard" },
+    user.role === "doctor" && { name: "Doctor", path: "/doctorDashboard" },
+    user.role === "patient" && { name: "Patient", path: "/patientDashboard" },
+  ].filter(Boolean) : [];
+
+  const authLinks = user
+    ? [{ name: "Logout", action: handleLogout }]
+    : [
+        { name: "Login", path: "/login" },
+        { name: "Register", path: "/register" }
+      ];
+
+  const drawer = (
+    <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
+      <List>
+        {[...commonLinks, ...userLinks, ...authLinks].map((link, index) => (
+          <ListItem key={index} disablePadding>
+            <ListItemButton
+              onClick={() => link.action ? link.action() : navigate(link.path)}
+            >
+              <ListItemText primary={link.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed">
         <Toolbar>
+          {/* Mobile menu icon */}
           <IconButton
             color="inherit"
             edge="start"
             sx={{ mr: 2, display: { sm: "none" } }}
+            onClick={handleDrawerToggle}
           >
             <MenuIcon />
           </IconButton>
 
+          {/* Title */}
           <Typography
             variant="h6"
             sx={{ flexGrow: 1, cursor: "pointer" }}
@@ -41,58 +86,35 @@ function Navbar() {
             Hospital Management System
           </Typography>
 
+          {/* Desktop links */}
           <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1 }}>
-            <Button component={Link} to="/" sx={{ color: "#fff" }}>
-              Home
-            </Button>
-            <Button component={Link} to="/services" sx={{ color: "#fff" }}>
-              Services
-            </Button>
-            <Button component={Link} to="/contact" sx={{ color: "#fff" }}>
-              Contact
-            </Button>
-            <Button component={Link} to="/help" sx={{ color: "#fff" }}>
-              Help
-            </Button>
-
-            {!user && (
-              <>
-                <Button component={Link} to="/login" sx={{ color: "#fff" }}>
-                  Login
-                </Button>
-                <Button component={Link} to="/register" sx={{ color: "#fff" }}>
-                  Register
-                </Button>
-              </>
-            )}
-
-            {user && (
-              <>
-                {user.role === "admin" && (
-                  <Button component={Link} to="/adminDashboard" sx={{ color: "#fff" }}>
-                    Admin
-                  </Button>
-                )}
-                {user.role === "doctor" && (
-                  <Button component={Link} to="/doctorDashboard" sx={{ color: "#fff" }}>
-                    Doctor
-                  </Button>
-                )}
-                {user.role === "patient" && (
-                  <Button component={Link} to="/patientDashboard" sx={{ color: "#fff" }}>
-                    Patient
-                  </Button>
-                )}
-                <Button sx={{ color: "#fff" }} onClick={handleLogout}>
-                  Logout
-                </Button>
-              </>
-            )}
+            {[...commonLinks, ...userLinks, ...authLinks].map((link, index) => (
+              <Button
+                key={index}
+                sx={{ color: "#fff" }}
+                onClick={() => link.action ? link.action() : navigate(link.path)}
+              >
+                {link.name}
+              </Button>
+            ))}
           </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Mobile drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Toolbar spacer for fixed AppBar */}
+      <Toolbar />
     </Box>
   );
-}
+};
 
 export default Navbar;

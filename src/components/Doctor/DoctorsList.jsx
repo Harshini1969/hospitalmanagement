@@ -1,8 +1,24 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Box,Card,CardContent,Typography,Button,Grid,Paper,Table,TableBody,TableCell,
-  TableRow,TableContainer,Dialog,DialogTitle,DialogContent} from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableContainer,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Divider
+} from "@mui/material";
 
 const DoctorsList = () => {
   const [doctors, setDoctors] = useState([]);
@@ -21,9 +37,11 @@ const DoctorsList = () => {
 
   const handleViewAppointments = (doctorName) => {
     axios
-      .get(`http://localhost:8000/appointments?doctor=${doctorName}`)
+      .get(`http://localhost:8000/appointments`)
       .then((res) => {
-        const appointments = res.data;
+        const appointments = res.data.filter(
+          (app) => app.doctor === doctorName
+        );
 
         axios.get("http://localhost:8000/patients").then((pRes) => {
           const allPatients = pRes.data;
@@ -49,32 +67,30 @@ const DoctorsList = () => {
   };
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "#f9fafb", minHeight: "100vh" }}>
+    <Box sx={{ p: 4, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
       {/* HEADER */}
       <Paper
-        elevation={3}
+        elevation={4}
         sx={{
-          p: 2,
-          mb: 4,
+          p: 3,
+          mb: 5,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderRadius: 3,
+          backgroundColor: "#ffffff"
         }}
       >
         <Typography variant="h4" fontWeight="bold">
-          Doctors List
+          Doctors
         </Typography>
 
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => navigate("/")}
-        >
-          Back 
+        <Button variant="outlined" size="small" onClick={() => navigate("/")}>
+          Back
         </Button>
       </Paper>
 
-      {/* DOCTORS */}
+      {/* DOCTORS GRID */}
       <Grid container spacing={4}>
         {doctors.length === 0 ? (
           <Typography>No doctors found</Typography>
@@ -84,21 +100,21 @@ const DoctorsList = () => {
               <Card
                 sx={{
                   height: "100%",
-                  borderRadius: 4,
-                  boxShadow: 4,
+                  borderRadius: 3,
+                  boxShadow: 3,
                   transition: "0.3s",
                   "&:hover": {
                     transform: "translateY(-5px)",
-                    boxShadow: 8,
-                  },
+                    boxShadow: 6
+                  }
                 }}
               >
                 <CardContent>
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
                     {d.name}
                   </Typography>
 
-                  <Typography color="text.secondary">
+                  <Typography color="text.secondary" sx={{ mb: 1 }}>
                     <b>Specialization:</b> {d.specialization}
                   </Typography>
 
@@ -106,8 +122,10 @@ const DoctorsList = () => {
                     <b>Experience:</b> {d.experience} years
                   </Typography>
 
+                  <Divider sx={{ my: 2 }} />
+
                   {/* ACTION BUTTONS */}
-                  <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                     <Button
                       variant="contained"
                       size="small"
@@ -125,15 +143,6 @@ const DoctorsList = () => {
                     >
                       Add Prescription
                     </Button>
-
-                    {/* Call Now / Book */}
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="small"
-                    >
-                         Call Now
-                    </Button>
                   </Box>
                 </CardContent>
               </Card>
@@ -143,20 +152,21 @@ const DoctorsList = () => {
       </Grid>
 
       {/* MODAL */}
-      <Dialog
-        open={openModal}
-        onClose={handleCloseModal}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>{selectedDoctor} - Patients</DialogTitle>
+      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: "bold" }}>
+          {selectedDoctor} - Patients
+        </DialogTitle>
 
         <DialogContent dividers>
           {patients.length === 0 ? (
             <Typography>No patients found.</Typography>
           ) : (
             patients.map((p, index) => (
-              <TableContainer component={Paper} sx={{ mb: 2 }} key={index}>
+              <TableContainer
+                component={Paper}
+                sx={{ mb: 3, borderRadius: 2 }}
+                key={index}
+              >
                 <Table size="small">
                   <TableBody>
                     {[
@@ -168,7 +178,7 @@ const DoctorsList = () => {
                       ["Disease", p.disease],
                     ].map(([label, value]) => (
                       <TableRow key={label}>
-                        <TableCell sx={{ fontWeight: "bold" }}>
+                        <TableCell sx={{ fontWeight: "bold", width: 150 }}>
                           {label}
                         </TableCell>
                         <TableCell>{value}</TableCell>
