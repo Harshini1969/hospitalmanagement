@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Card, Typography, Button, Divider, Table, TableBody, TableRow, TableCell, TableHead } from "@mui/material";
+import {
+  Box,
+  Card,
+  Typography,
+  Button,
+  Divider,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+} from "@mui/material";
 import Logout from "../Auth/Logout";
+import api from "../API/Api";
 
 const PatientDetails = () => {
   const { id } = useParams();
@@ -12,20 +23,18 @@ const PatientDetails = () => {
   const [medicalRecords, setMedicalRecords] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/patients/${id}`)
-      .then(res => {
-        const p = res.data;
-        setPatient(p);
+    api.get(`/patients/${id}`).then((res) => {
+      const p = res.data;
+      setPatient(p);
 
-        // Fetch appointments for this patient
-        axios.get("http://localhost:8000/appointments")
-          .then(a => setAppointments(a.data.filter(x => x.patientId === p.id)));
+      api.get("/appointments").then((a) =>
+        setAppointments(a.data.filter((x) => x.patientId === p.id))
+      );
 
-        // Fetch medical records for this patient
-        axios.get("http://localhost:8000/medicalRecords")
-          .then(m => setMedicalRecords(m.data.filter(x => x.patientId === p.id)));
-      })
-      .catch(err => console.error(err));
+      api.get("/medicalRecords").then((m) =>
+        setMedicalRecords(m.data.filter((x) => x.patientId === p.id))
+      );
+    }).catch((err) => console.error(err));
   }, [id]);
 
   if (!patient) return <Typography>Loading...</Typography>;
@@ -36,7 +45,14 @@ const PatientDetails = () => {
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Patient Profile</Typography>
         <Box>
-          <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => navigate(-1)}>Back</Button>
+          <Button
+            size="small"
+            variant="outlined"
+            sx={{ mr: 1 }}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
           <Logout />
         </Box>
       </Box>
@@ -44,7 +60,9 @@ const PatientDetails = () => {
       {/* BASIC INFO */}
       <Card variant="outlined" sx={{ mb: 4 }}>
         <Box p={3}>
-          <Typography variant="subtitle1" gutterBottom><b>Personal Information</b></Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            <b>Personal Information</b>
+          </Typography>
           <Divider sx={{ mb: 2 }} />
           <Table size="small">
             <TableBody>
@@ -57,7 +75,11 @@ const PatientDetails = () => {
                 ["Disease", patient.disease],
               ].map(([label, value]) => (
                 <TableRow key={label}>
-                  <TableCell sx={{ width: 180, fontWeight: 600, color: "text.primary" }}>{label}</TableCell>
+                  <TableCell
+                    sx={{ width: 180, fontWeight: 600, color: "text.primary" }}
+                  >
+                    {label}
+                  </TableCell>
                   <TableCell>{value}</TableCell>
                 </TableRow>
               ))}
@@ -69,10 +91,14 @@ const PatientDetails = () => {
       {/* APPOINTMENTS */}
       <Card variant="outlined" sx={{ mb: 4 }}>
         <Box p={3}>
-          <Typography variant="subtitle1" gutterBottom><b>Appointments</b></Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            <b>Appointments</b>
+          </Typography>
           <Divider sx={{ mb: 2 }} />
           {appointments.length === 0 ? (
-            <Typography color="text.secondary"><b>No appointments available</b></Typography>
+            <Typography color="text.secondary">
+              <b>No appointments available</b>
+            </Typography>
           ) : (
             <Table size="small">
               <TableHead>
@@ -84,7 +110,7 @@ const PatientDetails = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {appointments.map(a => (
+                {appointments.map((a) => (
                   <TableRow key={a.id}>
                     <TableCell>{a.doctor}</TableCell>
                     <TableCell>{a.date}</TableCell>
@@ -101,10 +127,14 @@ const PatientDetails = () => {
       {/* MEDICAL RECORDS */}
       <Card variant="outlined">
         <Box p={3}>
-          <Typography variant="subtitle1" gutterBottom><b>Medical Records</b></Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            <b>Medical Records</b>
+          </Typography>
           <Divider sx={{ mb: 2 }} />
           {medicalRecords.length === 0 ? (
-            <Typography color="text.secondary"><b>No medical records available</b></Typography>
+            <Typography color="text.secondary">
+              <b>No medical records available</b>
+            </Typography>
           ) : (
             <Table size="small">
               <TableHead>
@@ -116,7 +146,7 @@ const PatientDetails = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {medicalRecords.map(r => (
+                {medicalRecords.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>{r.doctorName}</TableCell>
                     <TableCell>{r.disease}</TableCell>

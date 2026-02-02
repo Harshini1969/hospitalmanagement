@@ -1,12 +1,13 @@
+// AdminDashboard.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   Box, Typography, Grid, Card, CardContent, Button, Paper,
   Table, TableHead, TableRow, TableCell, TableBody,
   TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem
 } from "@mui/material";
 import LogoutButton from "../Auth/Logout";
+import api from "../API/Api"; 
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -18,9 +19,9 @@ const AdminDashboard = () => {
 
   /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
-    axios.get("http://localhost:8000/patients").then(res => setPatients(res.data));
-    axios.get("http://localhost:8000/doctors").then(res => setDoctors(res.data));
-    axios.get("http://localhost:8000/appointments").then(res => setAppointments(res.data));
+    api.get("/patients").then(res => setPatients(res.data));
+    api.get("/doctors").then(res => setDoctors(res.data));
+    api.get("/appointments").then(res => setAppointments(res.data));
   }, []);
 
   /* ---------------- PATIENT ---------------- */
@@ -57,13 +58,10 @@ const AdminDashboard = () => {
     };
 
     if (appointmentForm.id) {
-      const res = await axios.put(
-        `http://localhost:8000/appointments/${appointmentForm.id}`,
-        payload
-      );
+      const res = await api.put(`/appointments/${appointmentForm.id}`, payload);
       setAppointments(appointments.map(a => a.id === payload.id ? res.data : a));
     } else {
-      const res = await axios.post("http://localhost:8000/appointments", payload);
+      const res = await api.post("/appointments", payload);
       setAppointments([...appointments, res.data]);
     }
 
@@ -71,20 +69,29 @@ const AdminDashboard = () => {
     setAppointmentForm({ id: null, patientId: "", specialization: "", doctorId: "", date: "", time: "" });
   };
 
+  /* ---------------- DELETE ---------------- */
+  const deletePatient = async (id) => {
+    await api.delete(`/patients/${id}`);
+    setPatients(patients.filter(p => p.id !== id));
+  };
+
+  const deleteDoctor = async (id) => {
+    await api.delete(`/doctors/${id}`);
+    setDoctors(doctors.filter(d => d.id !== id));
+  };
+
+  const deleteAppointment = async (id) => {
+    await api.delete(`/appointments/${id}`);
+    setAppointments(appointments.filter(a => a.id !== id));
+  };
+
   return (
     <Box p={3}>
-
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Admin Dashboard</Typography>
         <Box display="flex" gap={1}>
-           {/* BACK TO HOME BUTTON */}
-          <Box textAlign="right" mt={4}>
-            <Button variant="contained" color="primary" onClick={() => navigate("/")}>
-              Back
-            </Button>
-          </Box>
-            
+          <Button variant="contained" color="primary" onClick={() => navigate("/")}>Back</Button>
           <LogoutButton />
         </Box>
       </Box>
@@ -100,49 +107,30 @@ const AdminDashboard = () => {
       {/* DASHBOARD */}
       {view === "home" && (
         <Grid container spacing={3}>
-          <Grid item xs={4}>
-            <Card><CardContent>
-              <Typography>Total Patients</Typography>
-              <Typography variant="h4">{patients.length}</Typography>
-            </CardContent></Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card><CardContent>
-              <Typography>Total Doctors</Typography>
-              <Typography variant="h4">{doctors.length}</Typography>
-            </CardContent></Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card><CardContent>
-              <Typography>Total Appointments</Typography>
-              <Typography variant="h4">{appointments.length}</Typography>
-            </CardContent></Card>
-          </Grid>
+          <Grid item xs={4}><Card><CardContent>
+            <Typography>Total Patients</Typography>
+            <Typography variant="h4">{patients.length}</Typography>
+          </CardContent></Card></Grid>
+          <Grid item xs={4}><Card><CardContent>
+            <Typography>Total Doctors</Typography>
+            <Typography variant="h4">{doctors.length}</Typography>
+          </CardContent></Card></Grid>
+          <Grid item xs={4}><Card><CardContent>
+            <Typography>Total Appointments</Typography>
+            <Typography variant="h4">{appointments.length}</Typography>
+          </CardContent></Card></Grid>
         </Grid>
       )}
 
       {/* PATIENTS */}
       {view === "patients" && (
-        <Box sx={{ pt: 3 }}> 
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" mb={2}>Your Profile</Typography>
-            <Typography><strong>Name:</strong> John Doe</Typography>
-            <Typography><strong>Email:</strong> johndoe@gmail.com</Typography>
-            <Typography><strong>Phone:</strong> 9876543210</Typography>
-          </Paper>
-
-          <Paper sx={{ p: 2 }}>
+        <Box sx={{ pt: 3 }}>
+          <Paper sx={{ p: 2, mb: 2 }}>
             <Button
               variant="contained"
-              onClick={() => {
-                setPatientForm({ id: null, name: "", age: "", gender: "", disease: "", phone: "", email: "" });
-                setOpenPatient(true);
-              }}
+              onClick={() => { setPatientForm({ id: null, name: "", age: "", gender: "", disease: "", phone: "", email: "" }); setOpenPatient(true); }}
               sx={{ mb: 2 }}
-            >
-              Create Patient
-            </Button>
-
+            >Create Patient</Button>
             <Table>
               <TableHead>
                 <TableRow>
@@ -161,13 +149,8 @@ const AdminDashboard = () => {
                     <TableCell>{p.gender}</TableCell>
                     <TableCell>{p.disease}</TableCell>
                     <TableCell>
-                      <Button size="small" onClick={() => { setPatientForm(p); setOpenPatient(true); }}>
-                        Edit
-                      </Button>
-                      <Button size="small" color="error" onClick={async () => {
-                        await axios.delete(`http://localhost:8000/patients/${p.id}`);
-                        setPatients(patients.filter(x => x.id !== p.id));
-                      }}>Delete</Button>
+                      <Button size="small" onClick={() => { setPatientForm(p); setOpenPatient(true); }}>Edit</Button>
+                      <Button size="small" color="error" onClick={() => deletePatient(p.id)}>Delete</Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -182,15 +165,9 @@ const AdminDashboard = () => {
         <Paper sx={{ p: 2 }}>
           <Button
             variant="contained"
-            onClick={() => {
-              setDoctorForm({ id: null, name: "", specialization: "", experience: "", email: "" });
-              setOpenDoctor(true);
-            }}
+            onClick={() => { setDoctorForm({ id: null, name: "", specialization: "", experience: "", email: "" }); setOpenDoctor(true); }}
             sx={{ mb: 2 }}
-          >
-            Create Doctor
-          </Button>
-
+          >Create Doctor</Button>
           <Table>
             <TableHead>
               <TableRow>
@@ -208,10 +185,7 @@ const AdminDashboard = () => {
                   <TableCell>{d.experience} yrs</TableCell>
                   <TableCell>
                     <Button size="small" onClick={() => { setDoctorForm(d); setOpenDoctor(true); }}>Edit</Button>
-                    <Button size="small" color="error" onClick={async () => {
-                      await axios.delete(`http://localhost:8000/doctors/${d.id}`);
-                      setDoctors(doctors.filter(x => x.id !== d.id));
-                    }}>Delete</Button>
+                    <Button size="small" color="error" onClick={() => deleteDoctor(d.id)}>Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -223,10 +197,7 @@ const AdminDashboard = () => {
       {/* APPOINTMENTS */}
       {view === "appointments" && (
         <Paper sx={{ p: 2 }}>
-          <Button variant="contained" onClick={() => setOpenAppointment(true)} sx={{ mb: 2 }}>
-            Create Appointment
-          </Button>
-
+          <Button variant="contained" onClick={() => setOpenAppointment(true)} sx={{ mb: 2 }}>Create Appointment</Button>
           <Table>
             <TableHead>
               <TableRow>
@@ -248,10 +219,7 @@ const AdminDashboard = () => {
                   <TableCell>{a.time}</TableCell>
                   <TableCell>
                     <Button size="small" onClick={() => { setAppointmentForm(a); setOpenAppointment(true); }}>Edit</Button>
-                    <Button size="small" color="error" onClick={async () => {
-                      await axios.delete(`http://localhost:8000/appointments/${a.id}`);
-                      setAppointments(appointments.filter(x => x.id !== a.id));
-                    }}>Delete</Button>
+                    <Button size="small" color="error" onClick={() => deleteAppointment(a.id)}>Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -260,9 +228,11 @@ const AdminDashboard = () => {
         </Paper>
       )}
 
+      {/* ---------------- DIALOGS ---------------- */}
+
       {/* APPOINTMENT DIALOG */}
       <Dialog open={openAppointment} onClose={() => setOpenAppointment(false)} fullWidth>
-        <DialogTitle>Appointment</DialogTitle>
+        <DialogTitle>{appointmentForm.id ? "Edit Appointment" : "Create Appointment"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField select label="Patient" value={appointmentForm.patientId}
             onChange={e => setAppointmentForm({ ...appointmentForm, patientId: e.target.value })}>
@@ -271,9 +241,7 @@ const AdminDashboard = () => {
 
           <TextField select label="Specialization" value={appointmentForm.specialization}
             onChange={e => setAppointmentForm({ ...appointmentForm, specialization: e.target.value, doctorId: "" })}>
-            {[...new Set(doctors.map(d => d.specialization))].map(s => (
-              <MenuItem key={s} value={s}>{s}</MenuItem>
-            ))}
+            {[...new Set(doctors.map(d => d.specialization))].map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
           </TextField>
 
           <TextField select label="Doctor" value={appointmentForm.doctorId}
@@ -311,10 +279,10 @@ const AdminDashboard = () => {
           <Button onClick={() => setOpenPatient(false)}>Cancel</Button>
           <Button variant="contained" onClick={async () => {
             if (patientForm.id) {
-              const res = await axios.put(`http://localhost:8000/patients/${patientForm.id}`, patientForm);
+              const res = await api.put(`/patients/${patientForm.id}`, patientForm);
               setPatients(patients.map(p => p.id === patientForm.id ? res.data : p));
             } else {
-              const res = await axios.post("http://localhost:8000/patients", patientForm);
+              const res = await api.post("/patients", patientForm);
               setPatients([...patients, res.data]);
             }
             setOpenPatient(false);
@@ -336,10 +304,10 @@ const AdminDashboard = () => {
           <Button onClick={() => setOpenDoctor(false)}>Cancel</Button>
           <Button variant="contained" onClick={async () => {
             if (doctorForm.id) {
-              const res = await axios.put(`http://localhost:8000/doctors/${doctorForm.id}`, doctorForm);
+              const res = await api.put(`/doctors/${doctorForm.id}`, doctorForm);
               setDoctors(doctors.map(d => d.id === doctorForm.id ? res.data : d));
             } else {
-              const res = await axios.post("http://localhost:8000/doctors", doctorForm);
+              const res = await api.post("/doctors", doctorForm);
               setDoctors([...doctors, res.data]);
             }
             setOpenDoctor(false);
@@ -347,6 +315,7 @@ const AdminDashboard = () => {
           }}>Save</Button>
         </DialogActions>
       </Dialog>
+
     </Box>
   );
 };

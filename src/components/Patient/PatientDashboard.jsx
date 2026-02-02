@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import {Box,Typography,Button,Card,CardContent,Alert,TextField,Stack,} from "@mui/material";
+import { Box, Typography, Button, Card, CardContent, Alert, TextField, Stack } from "@mui/material";
 import Navbar from "../Home/Navbar";
+import api from "../API/Api";
 
 const PatientDashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -23,15 +23,15 @@ const PatientDashboard = () => {
   }, []);
 
   const fetchAppointments = () => {
-    axios
-      .get("http://localhost:8000/appointments")
+    api
+      .get("/appointments")
       .then((res) => setAppointments(res.data || []))
       .catch((err) => console.log(err));
   };
 
   const fetchRecords = () => {
-    axios
-      .get("http://localhost:8000/medicalRecords")
+    api
+      .get("/medicalRecords")
       .then((res) => setRecords(res.data || []))
       .catch((err) => console.log(err));
   };
@@ -50,9 +50,8 @@ const PatientDashboard = () => {
     };
 
     try {
-      await axios.post("http://localhost:8000/appointments", newAppointment);
+      await api.post("/appointments", newAppointment);
       setSuccessMsg("Appointment booked successfully!");
-      // Clear form
       setDoctor("");
       setDate("");
       setTime("");
@@ -66,7 +65,6 @@ const PatientDashboard = () => {
 
   return (
     <>
-      {/* NAVBAR WITH LOGOUT */}
       <Navbar />
 
       <Box p={3}>

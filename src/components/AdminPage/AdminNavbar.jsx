@@ -1,26 +1,23 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {Grid,Card,CardContent,Typography,Button,Box,Avatar} from "@mui/material";
 import AdminNavbar from "./AdminNavbar";
+import api from "../API/Api"; 
 
 export default function PatientPage() {
   const [patients, setPatients] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/patients")
-      .then((res) => setPatients(res.data));
+    api.get("/patients").then((res) => setPatients(res.data));
   }, []);
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/patients/${id}`);
+    await api.delete(`/patients/${id}`);
     setPatients(patients.filter((p) => p.id !== id));
   };
 
   return (
     <>
       <AdminNavbar />
-
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" align="center" mb={4}>
           Patient Details

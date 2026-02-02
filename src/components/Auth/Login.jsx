@@ -1,7 +1,17 @@
+// components/Auth/Login.jsx
 import { useState } from "react";
-import {TextField,Button,Card,CardContent,Stack,Box,IconButton,InputAdornment,} from "@mui/material";
+import {
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Box,
+  IconButton,
+  InputAdornment
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import axios from "axios";
+import api from "../API/Api";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -15,69 +25,47 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      setErrormsg("Please enter email and password");
-      return;
-    }
-
     try {
-      let user = null;
+      const [adminRes, usersRes, doctorsRes] = await Promise.all([
+        api.get("/admin"),
+        api.get("/users"),
+        api.get("/doctors")
+      ]);
 
-      // --------- ADMIN ---------
-      const adminRes = await axios.get("http://localhost:8000/admin");
-      user = adminRes.data.find(
-        (u) => u.email === email && u.password === password
-      );
+      const admin = adminRes.data;
+      const users = usersRes.data;
+      const doctors = doctorsRes.data;
 
-      // --------- PATIENT ---------
-      if (!user) {
-        const usersRes = await axios.get("http://localhost:8000/users");
-        user = usersRes.data.find(
-          (u) =>
-            u.email === email && u.password === password && u.role === "patient"
-        );
-      }
-
-      // --------- DOCTOR ---------
-      if (!user) {
-        const doctorRes = await axios.get("http://localhost:8000/doctors");
-        user = doctorRes.data.find(
-          (d) =>
-            d.email === email &&
-            d.password === password &&
-            d.role === "doctor"
-        );
-      }
+      const user =
+        admin.find(a => a.email === email && a.password === password) ||
+        users.find(u => u.email === email && u.password === password) ||
+        doctors.find(d => d.email === email && d.password === password);
 
       if (!user) {
         setErrormsg("Invalid credentials");
         return;
       }
 
-      // Save login info
-      localStorage.setItem("token", "sedrfthgyjukl");
+      localStorage.setItem("token", "dummy-token");
       localStorage.setItem("role", user.role);
       localStorage.setItem("user", JSON.stringify(user));
 
-      setErrormsg("");
-      setEmail("");
-      setPassword("");
-
-      // Navigate based on role
       if (user.role === "admin") navigate("/adminDashboard");
       else if (user.role === "doctor") navigate("/doctorDashboard");
       else navigate("/patientDashboard");
+
     } catch (err) {
-      console.log(err);
-      setErrormsg("Server error, try again later");
+      console.error(err);
+      setErrormsg("Server error");
     }
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", mt: 8, px: 2 }}>
-      <Card sx={{ width: "100%", maxWidth: 450, p: 3, boxShadow: 3 }}>
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
+      <Card sx={{ width: 450, p: 3 }}>
         <CardContent>
-          <h2 style={{ textAlign: "center", marginBottom: "16px" }}>Login</h2>
+          <h2 style={{ textAlign: "center" }}>Login</h2>
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
               <TextField
@@ -96,23 +84,22 @@ export default function Login() {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
+                      <IconButton onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  ),
+                  )
                 }}
               />
 
               {errormsg && (
-                <p style={{ color: "red", textAlign: "center" }}>{errormsg}</p>
+                <p style={{ color: "red", textAlign: "center" }}>
+                  {errormsg}
+                </p>
               )}
 
-              <Button variant="contained" type="submit" fullWidth>
-                Login
+              <Button type="submit" variant="contained">
+                LOGIN
               </Button>
 
               <p style={{ textAlign: "center" }}>

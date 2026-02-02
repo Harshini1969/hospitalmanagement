@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Box, Card, CardContent, Typography, Button, Grid, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import api from "../API/Api";
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:8000/patients")
+    api.get("/patients")
       .then(res => setPatients(res.data))
       .catch(err => console.error(err));
   }, []);

@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Box, TextField, Button, MenuItem, Typography } from "@mui/material";
+import api from "../API/Api";
 
 const AddMedicalRecord = () => {
   const doctor = JSON.parse(localStorage.getItem("user"));
@@ -10,8 +11,7 @@ const AddMedicalRecord = () => {
   const [prescription, setPrescription] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:8000/patients")
-      .then(res => setPatients(res.data));
+    api.get("/patients").then(res => setPatients(res.data));
   }, []);
 
   const addRecord = async () => {
@@ -22,7 +22,7 @@ const AddMedicalRecord = () => {
 
     const patient = patients.find(p => p.id === Number(patientId));
 
-    await axios.post("http://localhost:8000/medicalRecords", {
+    await api.post("/medicalRecords", {
       patientId,
       patientName: patient.name,
       doctorName: doctor.name,

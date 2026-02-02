@@ -1,13 +1,8 @@
+
 import React, { useState } from "react";
-import axios from "axios";
-import {
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Box
-} from "@mui/material";
+import { TextField, Button, Typography, Paper, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import api from "../API/Api";
 
 const AddPrescription = () => {
   const navigate = useNavigate();
@@ -32,7 +27,7 @@ const AddPrescription = () => {
     }
 
     try {
-      await axios.post("http://localhost:8000/medicalRecords", {
+      await api.post("/medicalRecords", {
         ...form,
         doctor: doctorName,
         date: new Date().toISOString().split("T")[0]
@@ -47,88 +42,21 @@ const AddPrescription = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        mt: 5,
-        px: 2
-      }}
-    >
-      <Paper
-        elevation={6}
-        sx={{
-          p: 4,
-          maxWidth: 500,
-          width: "100%",
-          borderRadius: 2,
-          bgcolor: "#fafafa"
-        }}
-      >
-        {/* Header */}
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 5, px: 2 }}>
+      <Paper elevation={6} sx={{ p: 4, maxWidth: 500, width: "100%", borderRadius: 2, bgcolor: "#fafafa" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
-          <Typography variant="h5" fontWeight="bold">
-            Add Prescription
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => navigate("/admin/doctors")}
-          >
-            Back
-          </Button>
+          <Typography variant="h5" fontWeight="bold">Add Prescription</Typography>
+          <Button variant="outlined" size="small" onClick={() => navigate("/admin/doctors")}>Back</Button>
         </Box>
 
-        {/* Form Fields */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            name="patient"
-            label="Patient Name"
-            fullWidth
-            required
-            value={form.patient}
-            onChange={handleChange}
-          />
-
-          <TextField
-            name="diagnosis"
-            label="Diagnosis"
-            fullWidth
-            required
-            value={form.diagnosis}
-            onChange={handleChange}
-          />
-
-          <TextField
-            name="medicines"
-            label="Medicines"
-            fullWidth
-            required
-            value={form.medicines}
-            onChange={handleChange}
-            placeholder="Separate multiple medicines with commas"
-          />
-
-          <TextField
-            name="notes"
-            label="Additional Notes"
-            fullWidth
-            multiline
-            rows={4}
-            value={form.notes}
-            onChange={handleChange}
-            placeholder="Optional notes or instructions"
-          />
+          <TextField name="patient" label="Patient Name" fullWidth required value={form.patient} onChange={handleChange} />
+          <TextField name="diagnosis" label="Diagnosis" fullWidth required value={form.diagnosis} onChange={handleChange} />
+          <TextField name="medicines" label="Medicines" fullWidth required value={form.medicines} onChange={handleChange} placeholder="Separate multiple medicines with commas" />
+          <TextField name="notes" label="Additional Notes" fullWidth multiline rows={4} value={form.notes} onChange={handleChange} placeholder="Optional notes or instructions" />
         </Box>
 
-        {/* Save Button */}
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 3 }}
-          fullWidth
-          onClick={addPrescription}
-        >
+        <Button variant="contained" color="primary" sx={{ mt: 3 }} fullWidth onClick={addPrescription}>
           Save Prescription
         </Button>
       </Paper>

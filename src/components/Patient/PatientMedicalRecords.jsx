@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import api from "../api";
 
 const PatientMedicalRecords = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/medicalRecords")
+    api.get("/medicalRecords")
       .then(res => {
-        const filtered = res.data.filter(
-          r => r.patient === user.name
-        );
+        const filtered = res.data.filter(r => r.patient === user.name);
         setRecords(filtered);
-      });
+      })
+      .catch(err => console.error(err));
   }, [user.name]);
 
   return (

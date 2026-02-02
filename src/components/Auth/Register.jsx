@@ -1,6 +1,7 @@
+// components/Auth/Register.jsx
 import { useState } from "react";
 import { TextField, Button, Card, CardContent, Stack } from "@mui/material";
-import axios from "axios";
+import api from "../API/Api";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -16,7 +17,7 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    //  Validation
+    // Validation
     if (!name || !email || !phone || !password || !confirmPassword) {
       setErrormsg("Please fill all fields");
       return;
@@ -26,18 +27,19 @@ export default function Register() {
       setErrormsg("Passwords do not match");
       return;
     }
-    const trimmedEmail = email.trim().toLowerCase(); 
-    try {
-      //  Check duplicate email
-const existingUser = await axios.get(
-  `http://localhost:8000/users?email=${trimmedEmail}`
-);
 
-if (existingUser.data.find(u => u.email && u.email.toLowerCase() === trimmedEmail)) {
-  setErrormsg("Email already registered");
-  return;
-}
-   //  Register user
+    const trimmedEmail = email.trim().toLowerCase(); 
+
+    try {
+      // Check duplicate email
+      const existingUser = await api.get(`/users?email=${trimmedEmail}`);
+
+      if (existingUser.data.find(u => u.email && u.email.toLowerCase() === trimmedEmail)) {
+        setErrormsg("Email already registered");
+        return;
+      }
+
+      // Register user
       const data = {
         name,
         email: trimmedEmail,
@@ -46,7 +48,7 @@ if (existingUser.data.find(u => u.email && u.email.toLowerCase() === trimmedEmai
         role: "patient"
       };
 
-      const res = await axios.post("http://localhost:8000/users", data);
+      const res = await api.post("/users", data);
       console.log("Registered user:", res.data);
 
       alert("Registration successful");

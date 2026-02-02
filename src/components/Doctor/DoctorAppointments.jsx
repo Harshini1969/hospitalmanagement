@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Card, CardContent, Typography, Button, Grid} from "@mui/material";
+import api from "../API/Api";
+import { Card, CardContent, Typography, Button, Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const DoctorAppointments = () => {
@@ -16,9 +16,9 @@ const DoctorAppointments = () => {
   const loadData = async () => {
     try {
       const [appRes, userRes, patientRes] = await Promise.all([
-        axios.get("http://localhost:8000/appointments"),
-        axios.get("http://localhost:8000/users"),
-        axios.get("http://localhost:8000/patients")
+        api.get("/appointments"),
+        api.get("/users"),
+        api.get("/patients")
       ]);
 
       const mergedData = appRes.data

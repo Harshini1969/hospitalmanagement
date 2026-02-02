@@ -38,7 +38,8 @@ const DoctorsDashboard = () => {
         onClick={() => setView("viewPrescriptions")}
       >
           View Prescriptions
-          </Button>
+      </Button>
+
       {view === "appointments" && <DoctorAppointments />}
       {view === "prescription" && <AddPrescription onBack={() => setView("")}/>}
       {view === "viewPrescriptions" && <DoctorPrescriptions />}

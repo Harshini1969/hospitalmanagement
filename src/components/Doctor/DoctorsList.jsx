@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -19,6 +18,7 @@ import {
   DialogContent,
   Divider
 } from "@mui/material";
+import api from "../API/Api"; 
 
 const DoctorsList = () => {
   const [doctors, setDoctors] = useState([]);
@@ -29,21 +29,21 @@ const DoctorsList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/doctors")
+    api
+      .get("/doctors")
       .then((res) => setDoctors(res.data))
       .catch((err) => console.error(err));
   }, []);
 
   const handleViewAppointments = (doctorName) => {
-    axios
-      .get(`http://localhost:8000/appointments`)
+    api
+      .get(`/appointments`)
       .then((res) => {
         const appointments = res.data.filter(
           (app) => app.doctor === doctorName
         );
 
-        axios.get("http://localhost:8000/patients").then((pRes) => {
+        api.get("/patients").then((pRes) => {
           const allPatients = pRes.data;
 
           const doctorPatients = appointments

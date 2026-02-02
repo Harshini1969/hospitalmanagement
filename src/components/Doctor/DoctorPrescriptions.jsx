@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../API/Api";
 import { Card, CardContent, Typography } from "@mui/material";
 
 const DoctorPrescriptions = () => {
@@ -10,9 +10,8 @@ const DoctorPrescriptions = () => {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/medicalRecords")
+    api.get("/medicalRecords")
       .then(res => {
-      
         const filtered = doctorName
           ? res.data.filter(r => r.doctor === doctorName)
           : res.data;
